@@ -6,12 +6,9 @@ document.addEventListener('DOMContentLoaded', function () {
      * - Appeler updateItemTotal sur chaque ligne pour recalculer les totaux existants
      * - Appeler updateInvoiceTotal pour afficher le total global correct
      */
-    const invoiceTable = document.getElementById('invoiceTable').getElementsByTagName('tbody')[0];
+    const invoiceTable = document.querySelector('#invoiceTable tbody');
     const invoiceTotal = document.getElementById('invoiceTotal');
-
-    Array.from(invoiceTable.rows).forEach(function (row) {
-        updateItemTotal(row);
-    });
+    let nextItemNumber = invoiceTable.rows.length + 1;
 
     updateInvoiceTotal();
 
@@ -27,15 +24,10 @@ document.addEventListener('DOMContentLoaded', function () {
      * - Retourner le total calculé afin de pouvoir le réutiliser
      */
     function updateItemTotal(row) {
-        const quantityInput = row.querySelector('.quantity');
-        const unitPriceInput = row.querySelector('.unitPrice');
-        const itemTotal = row.querySelector('.itemTotal');
-
-        const quantity = parseFloat(quantityInput.value) || 0;
-        const unitPrice = parseFloat(unitPriceInput.value) || 0;
+        const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
+        const unitPrice = parseFloat(row.querySelector('.unitPrice').value) || 0;
         const total = quantity * unitPrice;
-
-        itemTotal.textContent = total.toFixed(2);
+        row.querySelector('.itemTotal').textContent = total.toFixed(2);
         return total;
     }
 
@@ -51,9 +43,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateInvoiceTotal() {
         let total = 0;
 
-        Array.from(invoiceTable.rows).forEach(function (row) {
-            total += updateItemTotal(row);
-        });
+        for (let i = 0; i < invoiceTable.rows.length; i++) {
+            total += updateItemTotal(invoiceTable.rows[i]);
+        }
 
         invoiceTotal.textContent = total.toFixed(2);
     }
@@ -71,15 +63,16 @@ document.addEventListener('DOMContentLoaded', function () {
     function addNewItem() {
         const newRow = document.createElement('tr');
         newRow.innerHTML = `
-            <td>Nouvel Article</td>
+            <td>Article ${nextItemNumber++}</td>
             <td><input type="number" value="0" class="quantity" min="0"></td>
             <td><input type="number" value="0.00" class="unitPrice" min="0" step="0.01"></td>
             <td class="itemTotal">0.00</td>
         `;
 
-        newRow.querySelectorAll('.quantity, .unitPrice').forEach(function (input) {
-            input.addEventListener('input', updateInvoiceTotal);
-        });
+        const inputs = newRow.querySelectorAll('.quantity, .unitPrice');
+        for (let i = 0; i < inputs.length; i++) {
+            inputs[i].addEventListener('input', updateInvoiceTotal);
+        }
 
         addDeleteButton(newRow);
 
@@ -108,9 +101,9 @@ document.addEventListener('DOMContentLoaded', function () {
         row.appendChild(deleteCell);
     }
 
-    Array.from(invoiceTable.rows).forEach(function (row) {
-        addDeleteButton(row);
-    });
+    for (let i = 0; i < invoiceTable.rows.length; i++) {
+        addDeleteButton(invoiceTable.rows[i]);
+    }
 
     window.addNewItem = addNewItem;
 });
